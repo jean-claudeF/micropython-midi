@@ -1,5 +1,6 @@
 # Copyright (C) 2014 Craig Barnes
 # Modifications for Micropython by jean-claude.feltes@education.lu
+# for Standard Micropython
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -92,15 +93,6 @@ class Controller:
         >>> my_controller.note_on(65)
         >>> pyb.delay(100)
         >>> my_controller.note_off(65)
-
-    
-    The example above demonstrates the nature of midi note information.
-    When a keyboard key is pressed a note_on message is sent.  When the
-    key is released a note off message is sent.
-
-    An optional velocity value can also be sent, this usually controls
-    the volume of the note played, but this is often used to control other
-    characteristics of the sound played.
     """
     COMMANDS = (
         0x80,  # Note Off
@@ -154,7 +146,7 @@ class Controller:
     def control_change(self, control, value):
         """Send a control e.g. modulation or pedal message."""
         self.send_message(0xB0, control, value)
-
+    '''
     def program_change(self, value, bank=None):
         """Send a program change message, include bank if provided."""
         if bank:
@@ -162,6 +154,12 @@ class Controller:
             self.control_change(32, bank.lsb)
             self.control_change(0, bank.msb)
         self.send_message(0xC0, value)
+    '''
+    def program_change(self, value):
+        """Send a program change message"""
+        command = 0xC0 + self.channel - 1
+        self.port.write(struct.pack("bb",command, value))
+        
 
     def pitch_bend(self, value=0x2000):
         """Send a pich bend message.
@@ -215,12 +213,15 @@ class Controller:
 
 if __name__ == '__main__':
    
-   import time
+    import time
+    from machine import UART
+    midi = machine.UART(1, baudrate=31250)
+    instrument1 = Controller(midi, channel=1)
    
-   notes = [48, 52, 55, 57, 58, 57, 55, 52]
+    notes = [48, 52, 55, 57, 58, 57, 55, 52]
    
-   while True:   
-       for note in notes:
+    for i in range(0, 3):   
+        for note in notes:
            
            
             print(note)    
@@ -228,5 +229,6 @@ if __name__ == '__main__':
             time.sleep(0.2)
             instrument1.note_off(note )
             
-            time.sleep(1)
+            time.sleep(0.2)
             
+        instrument1.program_change(50)
