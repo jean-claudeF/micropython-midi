@@ -209,8 +209,27 @@ class Controller:
         self.all_sound_off()
         self.reset_all_controllers()
         self.all_notes_off()
+#----------------------------------------------------------------
+SECOND = 2
+THIRD = 4
+FOURTH = 5
+FIFTH = 7
+OCTAVE = 12
 
+def transpose(notes, interval):
+    tnotes = [note + interval for note in notes]
+    return tnotes
 
+def playnotes(notes, instrument, ontime, offtime, velocity = 80):
+    
+    for note in notes:
+
+        print(note)    
+        instrument.note_on(note, velocity)
+        time.sleep(ontime)
+        instrument.note_off(note )
+        time.sleep(offtime)
+#------------------------------------------------------------------
 if __name__ == '__main__':
    
     import time
@@ -219,16 +238,16 @@ if __name__ == '__main__':
     instrument1 = Controller(midi, channel=1)
    
     notes = [48, 52, 55, 57, 58, 57, 55, 52]
-   
-    for i in range(0, 3):   
-        for note in notes:
-           
-           
-            print(note)    
-            instrument1.note_on(note, 100)
-            time.sleep(0.2)
-            instrument1.note_off(note )
-            
-            time.sleep(0.2)
-            
-        instrument1.program_change(50)
+    
+    notes4 = transpose(notes, FOURTH)
+    notes5 = transpose(notes, FIFTH)
+    
+        
+    instrument1.program_change(1)
+    
+    all_notes = notes *2 + notes4 * 2 + notes *2 + notes5 + notes4 + notes *2 + notes5  + notes *2
+    all_notes = transpose(all_notes, - OCTAVE)
+    
+    playnotes(all_notes, instrument1, 0.15, 0.05)
+    
+    
